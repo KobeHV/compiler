@@ -13,4 +13,10 @@ string
 -
 fstream
 -
+map
+-
+algorithm
+-
+vector
+-
 

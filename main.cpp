@@ -1,17 +1,71 @@
 #include <iostream>
 #include <string>
 #include <fstream>
+#include <map>
+#include <algorithm>
+#include <vector>
 
 //Created By Kobe on 2019/4/11
 using namespace std;
 
 
-string KeyWord[] = {"if","else","void","return","while","for","do",
-                    "int","char","double","float","switch","case","main","struct"};
-char Operate[] = {'+','-','*','/','>','<','=','!'};
-char Divide[] = {';',',','{','}','[',']','(',')'};
+string KeyWord[] = {"if","else","do","while","int","double","bool","struct"};
+map <int,string> relatmap = {
+        {2,"if"},
+        {3,"else"},
+        {4,"do"},
+        {5,"while"},
+        {6,"int"},
+        {7,"double"},
+        {8,"bool"},
+        {9,"struct"},
+        {10,"="},
+        {11,"*"},
+        {12,"=="},
+        {13,"!="},
+        {14,"++"},
+        {15,"="},
+        {16,";"},
+        {17,"("},
+        {18,")"},
+        {19,"{"},
+        {20,"}"},
+};
+char Operate[] = {'+','*','=','!'};
+char Divide[] = {'=',';','(',')','{','}'};
 char Space[] = {' ','\t','\r','\n'};
 
+map <string, string> tokenmap = {
+        {"ADD",                "+"},
+        {"MUL",                "*"},
+        {"GREATER_THAN",       ">"},
+        {"LESS_THAN",          "<"},
+        {"EQUAL",              "="},
+        {"GREATER_THAN_EQUAL", ">="},
+        {"LESS_THAN_EQUAL",    "<="},
+        {"EQUAL_EQUAL",        "=="},
+        {"AND",                "&&"},
+        {"OR",                 "||"},
+        {"NOT",                "!"},
+        {"NOT_EQUAL",          "!="},
+        {"SLP",                "("},
+        {"SRP",                ")"},
+        {"MLP",                "["},
+        {"MRP",                "]"},
+        {"LP",                 "{"},
+        {"RP",                 "}"},
+        {"INC",                "++"},
+        {"DEC",                "--"},
+        {"SEMI",               ";"},
+        {"COM",                ","},
+        {"LSH",                "/"},
+        {"RSH",                "\\"},
+};
+
+vector <int> list1 ;
+vector <string> list2 ;
+vector <string> table;
+int cnt = 0;
 
 bool IsKeyword(string keyword){
     //int length = KeyWord->size();  //Wrong!
@@ -23,10 +77,10 @@ bool IsKeyword(string keyword){
     return false;
 }
 
-bool IsOperate(char ch){
+bool IsOperate(char str){
     int length = sizeof(Operate)/ sizeof(Operate[0]);
     for(int i=0;i<length;i++){
-        if(ch == Operate[i])
+        if(str == Operate[i])
             return true;
     }
     return false;
@@ -87,7 +141,7 @@ void ScanAnalyse(){
     string str = ScanByChar();
     int pos = 0;
     int length = str.length();
-    cout << "str:\n" << length << endl << str << endl;
+    //cout << "str:\n" << length << endl << str << endl;
     char ch ;
     string buffer = "";
     int state = 0;
@@ -96,7 +150,22 @@ void ScanAnalyse(){
         buffer = "";
         if(IsSpace(ch)) { pos++; }
         else if(IsDivide(ch)){
-            cout << "Separator  " << ch << endl;
+            buffer += ch;
+            for (map<string, string>::iterator it = tokenmap.begin();
+            it != tokenmap.end(); it++) {
+                if (it->second == buffer) {
+                    cout << buffer + "  <" + it->first + ", _>" << endl;
+
+                }
+            }
+            for (map<int , string>::iterator it = relatmap.begin();
+                 it != relatmap.end(); it++) {
+                if (it->second == buffer) {
+                    list1.push_back(it->first);
+                    list2.push_back("NONE");
+                }
+            }
+            //cout << ch + " <Separator  "  << endl;
             pos++;
         }
         else if(IsOperate(ch)){
@@ -106,9 +175,21 @@ void ScanAnalyse(){
                 buffer += ch;
                 pos++;
             }else{
-
             }
-            cout << "Operator  " << buffer << endl;
+            for (map<string, string>::iterator it = tokenmap.begin();
+                 it != tokenmap.end(); it++) {
+                if (it->second == buffer) {
+                    cout << buffer + "  <" + it->first + ", _>" << endl;
+                }
+            }
+            for (map<int , string>::iterator it = relatmap.begin();
+                 it != relatmap.end(); it++) {
+                if (it->second == buffer) {
+                    list1.push_back(it->first);
+                    list2.push_back("NONE");
+                }
+            }
+            //cout << "Operator  " << buffer << endl;
         }
         else if(IsDigit(ch)){
             state = 1;
@@ -132,6 +213,7 @@ void ScanAnalyse(){
                         if(IsDigit(ch)) state = 3;
                         else{
                             pos--;
+                            buffer.erase(buffer.end()-1);
                             flag = false;
                         }
                         break;
@@ -140,6 +222,7 @@ void ScanAnalyse(){
                         else if(ch == 'E'|| ch == 'e') state = 4;
                         else{
                             pos--;
+                            buffer.erase(buffer.end()-1);
                             flag = false;
                         }
                         break;
@@ -148,6 +231,7 @@ void ScanAnalyse(){
                         else if(IsDigit(ch)) state = 6;
                         else{
                             pos--;
+                            buffer.erase(buffer.end()-1);
                             flag = false;
                         }
                         break;
@@ -155,6 +239,7 @@ void ScanAnalyse(){
                         if(IsDigit(ch)) state = 6;
                         else{
                             pos--;
+                            buffer.erase(buffer.end()-1);
                             flag = false;
                         }
                         break;
@@ -162,18 +247,27 @@ void ScanAnalyse(){
                         if(IsDigit(ch)) state = 6;
                         else{
                             pos--;
+                            buffer.erase(buffer.end()-1);
                             flag = false;
                         }
                         break;
                     default:
                         pos--;
                         flag = false;
+                        buffer.erase(buffer.end()-1);
                         cout << "error!" << endl;
                         break;
                 }
                 pos++;
             }
-            cout << "Number  " << buffer << endl;
+            cout << buffer+" <CONST,"+buffer+">" << endl;
+
+            list1.push_back(9);
+            list2.push_back(to_string(cnt));
+            cnt++;
+            table.push_back(buffer);
+
+
         }
         else if(IsLetter(ch) || ch == '_'){
             buffer += ch;
@@ -189,10 +283,34 @@ void ScanAnalyse(){
                 }
             }
             if(IsKeyword(buffer)){
-                 cout << "KeyWord  " << buffer << endl;
+                 cout << buffer+" <" + buffer + ",_>" << endl;
+                for (map<int , string>::iterator it = relatmap.begin();
+                     it != relatmap.end(); it++) {
+                    if (it->second == buffer) {
+                        list1.push_back(it->first);
+                        list2.push_back("NONE");
+                    }
+                }
+                //<<transform(buffer.begin(), buffer.end(), buffer.begin(), ::toupper)
             }
             else{
-                cout << "Identifier  " << buffer << endl;
+                cout << buffer+" <IDN,"+buffer+">" << endl;
+
+                int i;
+                for(i=0;i<table.size();i++){
+                    if(buffer == table[i]){
+                        break;
+                    }
+
+                }
+                list1.push_back(1);
+                list2.push_back(to_string(cnt));
+
+                if(i==table.size()){
+                    cnt++;
+                    table.push_back(buffer);
+                }
+
             }           
         }
     }
@@ -201,5 +319,17 @@ void ScanAnalyse(){
 
 int main() {
     ScanAnalyse();
+
+    int length = list1.size();
+    cout << "token:" <<endl;
+    for(int i=0;i<length;i++){
+        //string str = "";
+        cout << "("<<list1[i]<<","+list2[i]+") , " << endl;
+    }
+    int length2 = table.size();
+    cout << "table:" <<endl;
+    for(int i=0;i<length2;i++){
+        cout << table[i]+",";
+    }
     return 0;
 }
