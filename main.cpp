@@ -276,6 +276,38 @@ void ScanAnalyse(){
                 }
             }           
         }
+        else if("/"){
+            state = 1;
+            buffer += ch;
+            pos++;
+            ch = str[pos++];
+            buffer += ch;
+            if(ch == '*'){
+                state = 2;
+            }
+            while(pos<length && state!=4){
+                ch = str[pos++];
+                buffer += ch;
+                switch(state){
+                    case 2:
+                        if(ch == '*'){
+                            state = 3;
+                        }else{}
+                        break;
+                    case 3:
+                        if(ch == '/'){
+                            state = 4;
+                        }else if(ch == '*'){
+                        }else{
+                            state = 2;
+                        }
+                        break;
+                    case 4:                    
+                        break;
+                }
+            }
+            cout << "annotation:" << buffer << endl;
+        }
     }
 }
 void print(){
